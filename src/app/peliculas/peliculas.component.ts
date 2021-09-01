@@ -1,6 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Movies } from '../models/movies';
+import { MoviesService } from '../services/movies.service';
 
 @Component({
   selector: 'app-peliculas',
@@ -12,7 +14,10 @@ export class PeliculasComponent implements OnInit {
   heroForm!: FormGroup;
   public ListMovie: Movies[]=[];
   
-  constructor() { }
+  constructor(
+    private httpclient: HttpClient,
+    private moviesService:MoviesService
+  ) { }
 
   ngOnInit(): void {
     this.heroForm = new FormGroup({
@@ -21,6 +26,7 @@ export class PeliculasComponent implements OnInit {
       genere: new FormControl('', [Validators.required])
     });
     console.log(this.heroForm)
+    this.callApi();
   }
 
   get title() { return this.heroForm.get('title'); }
@@ -31,13 +37,29 @@ export class PeliculasComponent implements OnInit {
     debugger;
     this.submit = true;
     if(this.heroForm.valid){
-      this.ListMovie.push(this.heroForm.value);
-      console.log(this.ListMovie);
+      this.ListMovie.push(this.heroForm.value);                   
+      this.moviesService.requestApiPost("Movies",this.heroForm.value).subscribe(data =>{
+        alert(JSON.stringify(data));
+      }, error => {
+        alert(JSON.stringify(error));        
+      });
+      
     }
   }
 
   deleteItems(index:number){
     this.ListMovie.splice(index,1);
   }
+
+  callApi(){
+    this.moviesService.requestApiGet("Movies",false,"").subscribe(data =>{
+      alert(JSON.stringify(data));
+    }, error => {
+      alert(JSON.stringify(error));
+      console.log(error);
+    });     
+  }
+
+
 
 }
